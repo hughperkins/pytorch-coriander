@@ -16,7 +16,7 @@
 
 #include "THCGenerateHalfType.h"
 #include "THCGenerateFloatType.h"
-#include "THCGenerateDoubleType.h"
+// #include "THCGenerateDoubleType.h"
 
 #undef THCTypeIdxByte
 #undef THCTypeIdxChar

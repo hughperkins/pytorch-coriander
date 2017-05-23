@@ -127,7 +127,7 @@ THC_API real THCTensor_(get3d)(THCState *state, const THCTensor *tensor, long x0
 THC_API real THCTensor_(get4d)(THCState *state, const THCTensor *tensor, long x0, long x1, long x2, long x3);
 
 /* CUDA-specific functions */
-THC_API cudaTextureObject_t THCTensor_(getTextureObject)(THCState *state, THCTensor *self);
+// THC_API cudaTextureObject_t THCTensor_(getTextureObject)(THCState *state, THCTensor *self);
 THC_API int THCTensor_(getDevice)(THCState *state, const THCTensor *self);
 THC_API int THCTensor_(checkGPU)(THCState *state, unsigned int nTensors, ...);
 

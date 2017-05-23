@@ -15,3 +15,6 @@ else:
         else:
             CUDA_HOME = None
     WITH_CUDA = CUDA_HOME is not None
+if 'WITH_CL':
+    WITH_CUDA = True
+    CUDA_HOME = '/usr/local'

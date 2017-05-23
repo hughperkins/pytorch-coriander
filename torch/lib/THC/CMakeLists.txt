@@ -1,6 +1,8 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8 FATAL_ERROR)
 CMAKE_POLICY(VERSION 2.8)
 
+set(WITH_CL TRUE)
+
 SET(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${CMAKE_MODULE_PATH})
 
 SET(CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE OFF)
@@ -24,12 +26,14 @@ IF(NOT TH_LIBRARIES)
 ENDIF(NOT TH_LIBRARIES)
 MESSAGE(STATUS "TH_LIBRARIES: ${TH_LIBRARIES}")
 
-IF(NOT CUDA_FOUND)
-  FIND_PACKAGE(CUDA 5.5 REQUIRED)
-ENDIF()
+IF(NOT WITH_CL)
+  IF(NOT CUDA_FOUND)
+    FIND_PACKAGE(CUDA 5.5 REQUIRED)
+  ENDIF()
 
-IF(NOT MAGMA_FOUND)
-  FIND_PACKAGE(MAGMA)
+  IF(NOT MAGMA_FOUND)
+    FIND_PACKAGE(MAGMA)
+  ENDIF()
 ENDIF()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -92,26 +96,30 @@ IF ($ENV{TH_BINARY_BUILD})
   SET(CMAKE_CXX_FLAGS "-static-libstdc++ ${CMAKE_CXX_FLAGS}")
 ENDIF()
 
-IF(APPLE)
-  IF(${CUDA_VERSION} LESS 6.0)
-    # work around for mac os x bug:
-    # http://stackoverflow.com/questions/16286588/cuda-5-0-cmake-and-make-failing-on-osx-10-8-3
-    if (NOT DEFINED CUDA_HOST_COMPILER AND CMAKE_C_COMPILER_ID STREQUAL "Clang" AND EXISTS /usr/bin/gcc)
-      set(CUDA_HOST_COMPILER /usr/bin/gcc CACHE FILEPATH "Host side compiler used by NVCC")
-      message(STATUS "Setting CMAKE_HOST_COMPILER to /usr/bin/gcc instead of ${CMAKE_C_COMPILER}.")
-    endif()
+IF(NOT WITH_CL)
+  IF(APPLE)
+    IF(${CUDA_VERSION} LESS 6.0)
+      # work around for mac os x bug:
+      # http://stackoverflow.com/questions/16286588/cuda-5-0-cmake-and-make-failing-on-osx-10-8-3
+      if (NOT DEFINED CUDA_HOST_COMPILER AND CMAKE_C_COMPILER_ID STREQUAL "Clang" AND EXISTS /usr/bin/gcc)
+        set(CUDA_HOST_COMPILER /usr/bin/gcc CACHE FILEPATH "Host side compiler used by NVCC")
+        message(STATUS "Setting CMAKE_HOST_COMPILER to /usr/bin/gcc instead of ${CMAKE_C_COMPILER}.")
+      endif()
 
-    # bug on Apple
-    LINK_DIRECTORIES("/usr/local/cuda/lib/")
-  ELSEIF(${CUDA_VERSION} LESS 7.0)
-    SET(CUDA_HOST_COMPILER clang)
-    LIST(APPEND CUDA_NVCC_FLAGS "-Xcompiler -stdlib=libstdc++ -Xlinker -stdlib=libstdc++")
-    IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++")
+      # bug on Apple
+      LINK_DIRECTORIES("/usr/local/cuda/lib/")
+    ELSEIF(${CUDA_VERSION} LESS 7.0)
+      SET(CUDA_HOST_COMPILER clang)
+      LIST(APPEND CUDA_NVCC_FLAGS "-Xcompiler -stdlib=libstdc++ -Xlinker -stdlib=libstdc++")
+      IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++")
+      ENDIF()
     ENDIF()
-  ENDIF()
-  # CUDA 7 supports clang and libc++ so no need to change anything
-ENDIF(APPLE)
+    # CUDA 7 supports clang and libc++ so no need to change anything
+  ENDIF(APPLE)
+ELSE(WITH_CL)
+  set(CUDA_HOST_COMPILER /usr/local/bin/cocl CACHE FILEPATH "compile .cu files using Coriander")
+ENDIF(WITH_CL)
 
 # Detect CUDA architecture and get best NVCC flags
 IF(NOT COMMAND CUDA_SELECT_NVCC_ARCH_FLAGS OR MSVC)
@@ -220,9 +228,13 @@ IF ("$ENV{STATIC_TH}" STREQUAL "YES")
   CUDA_ADD_LIBRARY(THC STATIC ${src} ${src-cuda})
   SET_TARGET_PROPERTIES(THC PROPERTIES COMPILE_FLAGS "-fPIC")
 ELSE()
-  CUDA_ADD_LIBRARY(THC SHARED ${src} ${src-cuda})
-  CUDA_ADD_CUBLAS_TO_TARGET(THC)
-  TARGET_LINK_LIBRARIES(THC ${TH_LIBRARIES} ${CUDA_curand_LIBRARY} ${CUDA_cusparse_LIBRARY})
+  IF(NOT WITH_CL)
+    CUDA_ADD_LIBRARY(THC SHARED ${src} ${src-cuda})
+    CUDA_ADD_CUBLAS_TO_TARGET(THC)
+    TARGET_LINK_LIBRARIES(THC ${TH_LIBRARIES} ${CUDA_curand_LIBRARY} ${CUDA_cusparse_LIBRARY})
+  ELSE(NOT WITH_CL)
+    
+  ENDIF(NOT WITH_CL)
 
   IF(USE_MAGMA)
     TARGET_LINK_LIBRARIES(THC ${MAGMA_LIBRARIES})
