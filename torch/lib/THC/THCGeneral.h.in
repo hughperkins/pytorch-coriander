@@ -9,7 +9,7 @@
 #include "cuda.h"
 #include "cuda_runtime.h"
 #include "cublas_v2.h"
-#include "cusparse.h"
+// #include "cusparse.h"
 
 #cmakedefine USE_MAGMA
 
@@ -63,7 +63,7 @@ typedef struct _THCCudaResourcesPerDevice {
   /* cuBLAS handes are lazily initialized */
   cublasHandle_t* blasHandles;
   /* cuSparse handes are lazily initialized */
-  cusparseHandle_t* sparseHandles;
+  // cusparseHandle_t* sparseHandles;
   /* Size of scratch space per each stream on this device available */
   size_t scratchSpacePerStream;
   /* Device-resident scratch space per stream, used for global memory
@@ -175,13 +175,13 @@ THC_API int THCState_getNumBlasHandles(THCState* state);
 THC_API void THCState_reserveSparseHandles(THCState* state, int numHandles);
 THC_API int THCState_getNumSparseHandles(THCState* state);
 
-THC_API cublasHandle_t THCState_getDeviceBlasHandle(THCState *state, int device, int handle);
-THC_API cublasHandle_t THCState_getCurrentBlasHandle(THCState *state);
+// THC_API cublasHandle_t THCState_getDeviceBlasHandle(THCState *state, int device, int handle);
+// THC_API cublasHandle_t THCState_getCurrentBlasHandle(THCState *state);
 THC_API int THCState_getCurrentBlasHandleIndex(THCState *state);
 THC_API void THCState_setCurrentBlasHandleIndex(THCState *state, int handle);
 
-THC_API cusparseHandle_t THCState_getDeviceSparseHandle(THCState *state, int device, int handle);
-THC_API cusparseHandle_t THCState_getCurrentSparseHandle(THCState *state);
+// THC_API cusparseHandle_t THCState_getDeviceSparseHandle(THCState *state, int device, int handle);
+// THC_API cusparseHandle_t THCState_getCurrentSparseHandle(THCState *state);
 THC_API int THCState_getCurrentSparseHandleIndex(THCState *state);
 THC_API void THCState_setCurrentSparseHandleIndex(THCState *state, int handle);
 
@@ -200,7 +200,7 @@ THC_API size_t THCState_getDeviceScratchSpaceSize(THCState* state, int device);
 THC_API void __THCudaCheck(cudaError_t err, const char *file, const int line);
 THC_API void __THCudaCheckWarn(cudaError_t err, const char *file, const int line);
 THC_API void __THCublasCheck(cublasStatus_t status, const char *file, const int line);
-THC_API void __THCusparseCheck(cusparseStatus_t status, const char *file, const int line);
+// THC_API void __THCusparseCheck(cusparseStatus_t status, const char *file, const int line);
 
 THC_API cudaError_t THCudaMalloc(THCState *state, void **ptr, size_t size);
 THC_API cudaError_t THCudaFree(THCState *state, void *ptr);

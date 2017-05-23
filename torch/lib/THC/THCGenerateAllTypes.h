@@ -16,12 +16,12 @@
 
 #include "THCGenerateByteType.h"
 #include "THCGenerateCharType.h"
-#include "THCGenerateShortType.h"
+// #include "THCGenerateShortType.h"
 #include "THCGenerateIntType.h"
 #include "THCGenerateLongType.h"
-#include "THCGenerateHalfType.h"
+// #include "THCGenerateHalfType.h"
 #include "THCGenerateFloatType.h"
-#include "THCGenerateDoubleType.h"
+// #include "THCGenerateDoubleType.h"
 
 #undef THCTypeIdxByte
 #undef THCTypeIdxChar

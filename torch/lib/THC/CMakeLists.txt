@@ -64,6 +64,8 @@ ENDIF()
 
 INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES("${CUDA_SDK_ROOT_DIR}/common/inc")
+message("CUDA_INCLUDE_DIRS ${CUDA_INCLUDE_DIRS}")
+# message("INCLUDE_DIRECTORIES ${INCLUDE_DIRECTORIES}")
 
 IF ("$ENV{STATIC_TH}" STREQUAL "YES")
 LIST(APPEND CUDA_NVCC_FLAGS "-Xcompiler -fPIC")
@@ -117,9 +119,9 @@ IF(NOT WITH_CL)
     ENDIF()
     # CUDA 7 supports clang and libc++ so no need to change anything
   ENDIF(APPLE)
-ELSE(WITH_CL)
+ELSE(NOT WITH_CL)
   set(CUDA_HOST_COMPILER /usr/local/bin/cocl CACHE FILEPATH "compile .cu files using Coriander")
-ENDIF(WITH_CL)
+ENDIF(NOT WITH_CL)
 
 # Detect CUDA architecture and get best NVCC flags
 IF(NOT COMMAND CUDA_SELECT_NVCC_ARCH_FLAGS OR MSVC)
@@ -129,12 +131,14 @@ LIST(APPEND CUDA_NVCC_FLAGS $ENV{TORCH_NVCC_FLAGS})
 CUDA_SELECT_NVCC_ARCH_FLAGS(NVCC_FLAGS_EXTRA $ENV{TORCH_CUDA_ARCH_LIST})
 LIST(APPEND CUDA_NVCC_FLAGS ${NVCC_FLAGS_EXTRA})
 
+message("THC_INSTALL_BIN_SUBDIR ${THC_INSTALL_BIN_SUBDIR}")
 IF(NOT THC_INSTALL_BIN_SUBDIR
     OR NOT THC_INSTALL_LIB_SUBDIR
     OR NOT THC_INSTALL_INCLUDE_SUBDIR
     OR NOT THC_INSTALL_CMAKE_SUBDIR)
 
   INCLUDE_DIRECTORIES(${TH_INCLUDE_PATH} ${TH_INCLUDE_PATH}/TH)
+  message("including ${TH_INCLUDE_PATH} ${TH_INCLUDE_PATH}/TH")
   LINK_DIRECTORIES(${TH_LIB_PATH})
 
   IF(Torch_INSTALL_BIN_SUBDIR)
@@ -175,35 +179,37 @@ SET(src
     )
 
 SET(src-cuda
-  THCReduceApplyUtils.cu
-  THCBlas.cu
-  THCSleep.cu
-  THCStorage.cu
-  THCStorageCopy.cu
+  # THCReduceApplyUtils.cu
+  # THCBlas.cu
+  # THCSleep.cu
+  # THCStorage.cu
+  # THCStorageCopy.cu
   THCTensor.cu
-  THCTensorCopy.cu
-  THCTensorMath.cu
-  THCTensorMath2.cu
-  THCTensorMathBlas.cu
-  THCTensorMathMagma.cu
-  THCTensorMathPairwise.cu
-  THCTensorMathReduce.cu
-  THCTensorMathScan.cu
-  THCTensorIndex.cu
-  THCTensorConv.cu
-  THCTensorRandom.cu
-  THCTensorScatterGather.cu
-  THCTensorTopK.cu
-  THCTensorSort.cu
-  THCTensorTypeUtils.cu
-  THCSortUtils.cu
-  THCTensorMode.cu
+  # THCTensorCopy.cu
+  # THCTensorMath.cu
+  # THCTensorMath2.cu
+  # THCTensorMathBlas.cu
+  # THCTensorMathMagma.cu
+  # THCTensorMathPairwise.cu
+  # THCTensorMathReduce.cu
+  # THCTensorMathScan.cu
+  # THCTensorIndex.cu
+  # THCTensorConv.cu
+  # THCTensorRandom.cu
+  # THCTensorScatterGather.cu
+  # THCTensorTopK.cu
+  # THCTensorSort.cu
+  # THCTensorTypeUtils.cu
+  # THCSortUtils.cu
+  # THCTensorMode.cu
   )
 
 # loop over all types
-foreach(THC_TYPE Byte Char Short Int Long Half Float Double)
+# foreach(THC_TYPE Byte Char Short Int Long Half Float Double)
+foreach(THC_TYPE Long Int Float)
    # loop over files which need to be split between types (because of long compile times)
-   foreach(THC_FILE TensorSort TensorMathCompareT TensorMathPointwise TensorMathCompare TensorMathReduce TensorMasked)
+   # foreach(THC_FILE TensorSort TensorMathCompareT TensorMathPointwise TensorMathCompare TensorMathReduce TensorMasked)
+   foreach(THC_FILE TensorMathCompareT TensorMathCompare)
       if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/generated/THC${THC_FILE}${THC_TYPE}.cu")
          FILE(WRITE "${CMAKE_CURRENT_SOURCE_DIR}/generated/THC${THC_FILE}${THC_TYPE}.cu"
               "#include \"../THC${THC_FILE}.cuh\"\n#include \"../generic/THC${THC_FILE}.cu\"\n#include \"../THCGenerate${THC_TYPE}Type.h\"\n")
@@ -233,7 +239,8 @@ ELSE()
     CUDA_ADD_CUBLAS_TO_TARGET(THC)
     TARGET_LINK_LIBRARIES(THC ${TH_LIBRARIES} ${CUDA_curand_LIBRARY} ${CUDA_cusparse_LIBRARY})
   ELSE(NOT WITH_CL)
-    
+    INCLUDE("/usr/local/share/cocl/cocl.cmake")
+    add_cocl_executable(THC ${src} ${src-cuda})
   ENDIF(NOT WITH_CL)
 
   IF(USE_MAGMA)
@@ -244,15 +251,15 @@ ELSE()
     SET(THC_SO_VERSION 0)
   ENDIF(NOT THC_SO_VERSION)
   MESSAGE(STATUS "THC_SO_VERSION: ${THC_SO_VERSION}")
-  SET_TARGET_PROPERTIES(THC PROPERTIES
-    VERSION   ${THC_SO_VERSION}
-    SOVERSION ${THC_SO_VERSION})
+  # SET_TARGET_PROPERTIES(THC PROPERTIES
+  #   VERSION   ${THC_SO_VERSION}
+  #   SOVERSION ${THC_SO_VERSION})
 
 
-  INSTALL(TARGETS THC
-    RUNTIME DESTINATION "${THC_INSTALL_BIN_SUBDIR}"
-    LIBRARY DESTINATION "${THC_INSTALL_LIB_SUBDIR}"
-    ARCHIVE DESTINATION "${THC_INSTALL_LIB_SUBDIR}")
+  # INSTALL(TARGETS THC
+  #   RUNTIME DESTINATION "${THC_INSTALL_BIN_SUBDIR}"
+  #   LIBRARY DESTINATION "${THC_INSTALL_LIB_SUBDIR}"
+  #   ARCHIVE DESTINATION "${THC_INSTALL_LIB_SUBDIR}")
 ENDIF()
 
 
