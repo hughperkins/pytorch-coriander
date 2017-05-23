@@ -1,0 +1,6 @@
+[submodule "third_party/coriander"]
+	path = third_party/coriander
+	url = https://github.com/hughperkins/coriander
+[submodule "third_party/thrust"]
+	path = third_party/thrust
+	url = https://github.com/thrust/thrust.git
