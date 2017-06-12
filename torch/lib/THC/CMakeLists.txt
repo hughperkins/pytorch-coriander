@@ -158,6 +158,7 @@ ENDIF()
 
 INCLUDE_DIRECTORIES("${CMAKE_CURRENT_SOURCE_DIR}")
 INCLUDE_DIRECTORIES("${CMAKE_CURRENT_BINARY_DIR}")
+INCLUDE_DIRECTORIES("${CMAKE_CURRENT_SOURCE_DIR}/../../../third_party/thrust")
 CONFIGURE_FILE(THCGeneral.h.in "${CMAKE_CURRENT_BINARY_DIR}/THCGeneral.h")
 
 IF(MSVC)
@@ -182,7 +183,7 @@ SET(src-cuda
   # THCReduceApplyUtils.cu
   # THCBlas.cu
   # THCSleep.cu
-  # THCStorage.cu
+  THCStorage.cu
   # THCStorageCopy.cu
   THCTensor.cu
   # THCTensorCopy.cu
